@@ -7,51 +7,33 @@ const url = 'mongodb://localhost:27017/';
 const dbname = 'Readme';
 
 
-mongoClient.connect(url,(err , client) => {
+mongoClient.connect(url).then((client) => {  
     // useUnifiedTopology: true
     const db= client.db(dbname);
-    operation.insertDoc(db,{name :" Biryani" , description:"Testing"},'dishes',(result) => {
+    operation.insertDoc(db,{name :" Biryani" , description:"Testing"},'dishes')
+    .then((result) => {
         console.log('inserted Document : ' ,result.ops);
 
-        operation.findDoc(db,'dishes',(doc) => {
-            console.log('Found The Document : ', doc);
+        return operation.findDoc(db,'dishes')
 
-            operation.updateDoc(db,{name : "Biryani" },{description : "updated Korma"}, 'dishes', (result) => {
-                console.log('sucessfully updated : ' ,result.result);
-                operation.findDoc(db,'dishes',(doc) => {
-                    console.log('Fonud Yet : ',doc);
+    })
+    .then((doc) => {
+        console.log('Found The Document : ', doc);
 
-                    db.dropCollection('dishes' , (result) =>{
-                        console.log('Droped Collection' ,   result );
-                        client.close();
-                    });
-                });
-                
-            });
-        })
-    });  
+        return operation.updateDoc(db,{name : " Biryani" },{description : "updated Korma"}, 'dishes')
+    })
+    .then( (result) => {
+        console.log('sucessfully updated : ' ,result.result);
+        return operation.findDoc(db,'dishes')
+    })
+    .then((doc) =>{
+        console.log('Fonud Yet : ',doc);
+        return db.dropCollection('dishes' )
+    })
+    .then((result) => {
+        console.log('Droped Collection' ,   result );
+        client.close();
+        }).catch((err) => console.log(err));
+                                
 
-});
-
-// assert.equal(err,null);
-//     console.log('We are Sucessfully Connected to '+url);
-
-//     const db = client.db(dbname);
-//     const collection = db.collection('dishes');
-
-//     collection.insertOne({
-//         "name":"Pizza Fries",
-//         "description":"Native"
-//     },(err , result) => {
-//         assert.equal(err,null);
-//         console.log('after insert : '+ result) //ops => operations sucessful
-//         collection.find({}).toArray( (err,result) => {
-//             assert.equal(err,null);
-//             console.log( "All Doc"+result);
-
-//             db.dropCollection('dishes' , (err,result) => {
-//                 assert.equal(err,null);
-//                 client.close();
-//             })
-//         });
-//     });
+}).catch((err) => console.log(err));
